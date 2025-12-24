@@ -4,17 +4,14 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   base: '/',
-  server: {
-    host: '0.0.0.0', // This is the secret to fixing the 8080 error
-    port: 8080,
-    strictPort: true
+  resolve: {
+    dedupe: ['react', 'react-dom'], // This forces a single copy of React
+  },
+  build: {
+    outDir: 'dist',
   },
   preview: {
     host: '0.0.0.0',
-    port: 8080,
-    strictPort: true
-  },
-  build: {
-    outDir: 'dist'
+    port: 8080
   }
 })
