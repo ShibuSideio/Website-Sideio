@@ -1,17 +1,14 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom' // This was missing
 import App from './App.jsx'
 import './index.css'
 
-// Safe initialization
-const rootElement = document.getElementById('root');
-
-if (rootElement) {
-  ReactDOM.createRoot(rootElement).render(
-    <React.StrictMode>
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    {/* This wrapper enables all navigation and fixes the 'null' error */}
+    <BrowserRouter>
       <App />
-    </React.StrictMode>
-  );
-} else {
-  console.error("Failed to find the root element.");
-}
+    </BrowserRouter>
+  </React.StrictMode>,
+)
