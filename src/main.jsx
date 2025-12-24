@@ -1,16 +1,17 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './index.css'
-import AOS from 'aos'
-import 'aos/dist/aos.css'
 
-useEffect(() => {
-  AOS.init({ duration: 900, once: true });
-}, []);
+// Safe initialization
+const rootElement = document.getElementById('root');
 
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-)
+if (rootElement) {
+  ReactDOM.createRoot(rootElement).render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
+} else {
+  console.error("Failed to find the root element.");
+}
