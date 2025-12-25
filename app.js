@@ -12,27 +12,28 @@ app.use(express.json());
 // --- CONFIGURATION ---
 const PORT = process.env.PORT || 8080;
 const apiKey = process.env.GEMINI_API_KEY;
-
-// Use the Stable Model you are billed for
 const MODEL_NAME = "gemini-2.0-flash"; 
 
-console.log("--- LOGIC CORE ONLINE ---");
-console.log(`Model: ${MODEL_NAME}`);
+console.log("--- SIDEIO LOGIC CORE ONLINE ---");
 
 if (!apiKey) console.error("CRITICAL: API Key Missing");
 
 const genAI = new GoogleGenerativeAI(apiKey || "MISSING_KEY");
 
-// --- THE PERSONA (YOUR SCRIPT) ---
-// We embed this directly into the brain so it never forgets who it is.
+// --- THE BRANDED PERSONA WITH EXAMPLES ---
 const SYSTEM_INSTRUCTION = `
 ROLE:
-You are the "Strategy logic Auditor," an elite logic engine designed to stress-test corporate strategy. You represent "The Narrative Architect."
-TONE: Clinical, minimalist, sophisticated, skeptical. High-status.
+You are the "Strategy Logic Auditor," a proprietary intelligence engine designed to stress-test corporate strategy. You represent "SideIO Strategy."
+TONE: Clinical, minimalist, sophisticated, skeptical. High-status. 
 VOCABULARY: Institutional Clarity, Margin Engineering, Narrative Friction, Structural Drift, Commodity Tax.
 
 STRICT INTERACTION RULES:
-1. ENTRY: If this is the start of the conversation, say EXACTLY: "Most CEOs are currently paying a 15% 'Commodity Tax' simply because their market signal is diffused. I am the Shadow Auditor. I am not here to validate your strategy; I am here to find where it is leaking value. To begin: Provide the singular strategic priority you believe is currently anchoring your firm’s valuation."
+1. ENTRY: If this is the start of the conversation, say EXACTLY: 
+"Most CEOs are currently paying a 15% 'Commodity Tax' simply because their market signal is diffused. I am the Strategy Logic Auditor. I am not here to validate your strategy; I am here to find where it is leaking value.
+
+To begin: Provide the singular strategic priority you believe is currently anchoring your firm’s valuation.
+
+(Examples: 'Transitioning from Service to SaaS Platform', 'Vertical integration of the supply chain', or 'Aggressive mid-market consolidation')."
 
 2. THE INTERROGATION: 
    - For every answer, find the "Logical Flaw." 
@@ -51,23 +52,23 @@ STRICT INTERACTION RULES:
 
 REPORT STRUCTURE:
 "CONFIDENTIAL LOGIC AUDIT: Initial Narrative Stress-Test
-Auditor: Strategy Audit Logic Module v.3.0
+Auditor: SideIO Logic Module v.1.0
 I. EXECUTIVE SUMMARY: The Cost of Diffusion
 (Quantify Commodity Tax 8-20%. Define Narrative Debt).
 II. STRUCTURAL GAPS
 (List 3 failures: Logic, Differentiation, Valuation).
 III. ARCHITECT'S PRELIMINARY INSIGHT
-'This audit indicates architectural gaps that cannot be resolved through internal discussion. A Logic Sync is required to hard-code your Power of 1 into a market signal.'
+'This audit indicates architectural gaps that cannot be resolved through internal discussion. A SideIO Logic Sync is required to hard-code your Power of 1 into a market signal.'
 THE CALL TO ACTION:
-'The Principal has authorized a 30-minute diagnostic slot for your firm. You may secure the session here: https://calendar.app.google/73BXSrDCkXv7vZ2p9'"
+'The Principal has authorized a 15-minute diagnostic slot for your firm. You may secure the session here: https://calendar.app.google/73BXSrDCkXv7vZ2p9'"
 `;
 
-// --- MODEL INITIALIZATION (STRICT MODE) ---
+// --- MODEL SETUP ---
 const model = genAI.getGenerativeModel({ 
     model: MODEL_NAME,
-    systemInstruction: SYSTEM_INSTRUCTION, // <--- This injects the persona
+    systemInstruction: SYSTEM_INSTRUCTION,
     generationConfig: {
-        temperature: 0.3, // <--- COLD. Reduces "creativity" and "hallucination".
+        temperature: 0.3, 
         maxOutputTokens: 1000,
     }
 });
@@ -78,8 +79,7 @@ app.post('/api/chat', async (req, res) => {
     const { message, history } = req.body;
     console.log(`[INCOMING] ${message ? message.substring(0, 50) : 'Empty'}...`);
     
-    // We reconstruct the chat history so the AI remembers the context
-    // This is crucial for it to know when to trigger the report
+    // 1. History Processing
     let chatHistory = [];
     if (history && Array.isArray(history)) {
         chatHistory = history.map(h => ({
@@ -88,20 +88,32 @@ app.post('/api/chat', async (req, res) => {
         }));
     }
 
-    const chat = model.startChat({
-        history: chatHistory
-    });
+    // 2. History Sanitization
+    if (chatHistory.length > 0 && chatHistory[0].role === 'model') {
+        chatHistory.shift(); 
+    }
 
+    // 3. Inference
+    const chat = model.startChat({ history: chatHistory });
     const result = await chat.sendMessage(message);
     const response = await result.response;
     const text = response.text();
 
-    console.log("[SUCCESS] Logic Processed.");
+    console.log("[SUCCESS] Inference Complete.");
     res.json({ reply: text });
 
   } catch (error) {
-    console.error("[ERROR] Logic Core Failure:", error);
-    res.status(500).json({ reply: `[SYSTEM FAILURE]: ${error.message}` });
+    // --- ERROR MASKING ---
+    console.error("[INTERNAL SYSTEM ERROR]:", error);
+    let userErrorMessage = "[SYSTEM NOTICE]: SideIO Logic Core disrupted. Connection reset.";
+
+    if (error.message.includes("429") || error.message.includes("Quota")) {
+        userErrorMessage = "[TRAFFIC CONTROL]: SideIO Logic Core is currently at maximum capacity. Please wait 15 seconds and retry.";
+    } else if (error.message.includes("SAFETY")) {
+        userErrorMessage = "[PROTOCOL]: Input rejected by Strategy Logic Filter. Please rephrase.";
+    }
+
+    res.status(500).json({ reply: userErrorMessage });
   }
 });
 
@@ -109,5 +121,5 @@ app.use(express.static(join(__dirname, 'dist')));
 app.get('*', (req, res) => res.sendFile(join(__dirname, 'dist', 'index.html')));
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Shadow Auditor Online on Port ${PORT}`);
+  console.log(`SideIO Strategy Logic Auditor Online: Port ${PORT}`);
 });
