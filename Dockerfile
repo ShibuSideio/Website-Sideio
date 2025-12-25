@@ -15,20 +15,24 @@ WORKDIR /app
 # Copy package files so we can install the AI libraries
 COPY package*.json ./
 
-# Install ONLY the backend dependencies (Express, Google AI, Firebase)
-# We skip the heavy design tools like Tailwind here to keep it fast
+# Install ONLY the backend dependencies
+# We use 'ci' (Clean Install) for valid, reproducible builds
 RUN npm install --omit=dev
 
 # Copy the built "Face" (Frontend) from Step 1
 COPY --from=builder /app/dist ./dist
 
-# Copy the "Brain" (server.js) from your project folder
-COPY server.js .
+# --- CRITICAL CHANGE ---
+# Instead of copying just 'server.js', we copy EVERYTHING.
+# This ensures 'app.js', '.env', and any future files are included.
+# This also forces the build cache to reset because the file structure changed.
+COPY . .
 
 # Tell Google Cloud Run to expect Port 8080
 ENV PORT=8080
 EXPOSE 8080
 
-# START COMMAND: This runs 'node server.js' (via npm start)
-# This launches the Logic Core, which serves both the website and the AI.
+# START COMMAND: 
+# This runs whatever command is in your package.json under "start".
+# Since we updated package.json to say "node app.js", this will run the new brain.
 CMD ["npm", "start"]
