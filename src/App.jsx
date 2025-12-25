@@ -3,7 +3,8 @@ import { HashLink as Link } from 'react-router-hash-link';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // --- CONFIGURATION ---
-const LINKEDIN_PROFILE_URL = "https://www.linkedin.com/in/shibuthomas/recent-activity/all/"; 
+// UPDATED: Points directly to your content stream
+const LINKEDIN_PROFILE_URL = "https://www.linkedin.com/in/narrative-architect/recent-activity/all/"; 
 
 // --- COMPONENT: LINKEDIN FLOATING INTELLIGENCE UNIT ---
 const LinkedInFloater = () => (
@@ -18,7 +19,8 @@ const LinkedInFloater = () => (
   >
     <div className="relative">
       <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-emerald-500">
-        <img src="https://ui-avatars.com/api/?name=Shibu+Thomas&background=10b981&color=fff" alt="Shibu" className="w-full h-full object-cover" />
+        {/* You can replace this src with your actual LinkedIn profile picture URL later */}
+        <img src="https://ui-avatars.com/api/?name=Narrative+Architect&background=10b981&color=fff" alt="Shibu" className="w-full h-full object-cover" />
       </div>
       <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full animate-pulse"></div>
     </div>
@@ -214,7 +216,7 @@ const App = () => {
             <li><Link smooth to="#shibu-loop" className="hover:text-emerald-600 transition-colors">The Loop</Link></li>
             <li><Link smooth to="#services" className="hover:text-emerald-600 transition-colors">Frameworks</Link></li>
             <li>
-              {/* THE PIVOT: BOOK BRIEFING BUTTON */}
+              {/* BOOK BRIEFING BUTTON */}
               <Link 
                 smooth to="#contact" 
                 className="bg-gray-900 text-white px-6 py-2.5 rounded-full hover:bg-emerald-600 transition text-xs font-bold uppercase tracking-widest flex items-center gap-2 shadow-lg hover:shadow-emerald-200"
