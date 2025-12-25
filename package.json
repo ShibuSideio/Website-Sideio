@@ -1,7 +1,7 @@
 {
   "name": "website-sideio",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,7 +10,7 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.1.3",
+    "@google/generative-ai": "^0.12.0",
     "aos": "^2.3.4",
     "clsx": "^2.1.1",
     "express": "^4.19.2",
