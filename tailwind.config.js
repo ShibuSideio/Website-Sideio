@@ -2,18 +2,21 @@
 export default {
   content: [
     "./index.html",
-    "./src/**/*.{js,jsx}",
+    "./src/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
     extend: {
-      colors: {
-        emerald: '#10b981',
-        teal: '#14b8a6',
-        cyan: '#06b6d4',
+      // We rely on the default Tailwind palette for Emerald, Teal, Cyan, and Red
+      // so we can use shades like emerald-50, teal-600, etc.
+      fontFamily: { 
+        sans: ['Inter', 'sans-serif', 'system-ui'] 
       },
-      fontFamily: { sans: ['Inter', 'sans-serif'] },
       backgroundImage: {
         'vibrant-gradient': 'linear-gradient(135deg, #10b981, #14b8a6, #06b6d4)',
+      },
+      // Optional: Add custom animation support if needed later
+      animation: {
+        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       }
     },
   },
