@@ -1,38 +1,30 @@
-# Step 1: Build the Frontend (Vite/React)
+# STAGE 1: Build the Visual Interface
 FROM node:20-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
-# Install all dependencies to build the visual interface
 RUN npm install
 COPY . .
-# Build the website into the 'dist' folder
 RUN npm run build
 
-# Step 2: Setup the Logic Core (The Backend Brain)
+# STAGE 2: Build the Production Server
 FROM node:20-alpine
 WORKDIR /app
 
-# Copy package files so we can install the AI libraries
+# 1. Install Dependencies
 COPY package*.json ./
-
-# Install ONLY the backend dependencies
-# We use 'ci' (Clean Install) for valid, reproducible builds
+# --omit=dev keeps the image small and prevents "vite" crashes
 RUN npm install --omit=dev
 
-# Copy the built "Face" (Frontend) from Step 1
-COPY --from=builder /app/dist ./dist
-
-# --- CRITICAL CHANGE ---
-# Instead of copying just 'server.js', we copy EVERYTHING.
-# This ensures 'app.js', '.env', and any future files are included.
-# This also forces the build cache to reset because the file structure changed.
+# 2. Copy Source Code (app.js, etc)
 COPY . .
 
-# Tell Google Cloud Run to expect Port 8080
+# 3. Copy Built Assets (The Website)
+# We do this LAST to ensure nothing overwrites the 'dist' folder
+COPY --from=builder /app/dist ./dist
+
+# 4. Expose Port
 ENV PORT=8080
 EXPOSE 8080
 
-# START COMMAND: 
-# This runs whatever command is in your package.json under "start".
-# Since we updated package.json to say "node app.js", this will run the new brain.
+# 5. Start Command
 CMD ["npm", "start"]
