@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // --- CONFIGURATION ---
 // REPLACE THIS WITH YOUR ACTUAL LINKEDIN USERNAME (e.g., shibu-thomas-123)
-const LINKEDIN_PROFILE_URL = "https://www.linkedin.com/in/shibuthomas/recent-activity/all/"; 
+const LINKEDIN_PROFILE_URL = "https://www.linkedin.com/in/narrative-architect/recent-activity/all/"; 
 
 // --- COMPONENT: LINKEDIN FLOATING INTELLIGENCE UNIT ---
 const LinkedInFloater = () => (
