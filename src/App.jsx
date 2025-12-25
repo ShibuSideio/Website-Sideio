@@ -2,6 +2,35 @@ import React, { useState, useEffect, useRef } from 'react';
 import { HashLink as Link } from 'react-router-hash-link';
 import { motion, AnimatePresence } from 'framer-motion';
 
+// --- CONFIGURATION ---
+// REPLACE THIS WITH YOUR ACTUAL LINKEDIN USERNAME (e.g., shibu-thomas-123)
+const LINKEDIN_PROFILE_URL = "https://www.linkedin.com/in/shibuthomas/recent-activity/all/"; 
+
+// --- COMPONENT: LINKEDIN FLOATING INTELLIGENCE UNIT ---
+const LinkedInFloater = () => (
+  <motion.a 
+    href={LINKEDIN_PROFILE_URL}
+    target="_blank"
+    rel="noopener noreferrer"
+    initial={{ y: 100, opacity: 0 }}
+    animate={{ y: 0, opacity: 1 }}
+    transition={{ delay: 2, duration: 0.8, type: "spring" }}
+    className="fixed bottom-6 right-6 z-40 hidden md:flex items-center gap-3 bg-white p-2 pr-6 rounded-full shadow-[0_10px_40px_-10px_rgba(0,0,0,0.2)] border border-gray-100 hover:scale-105 transition-transform group cursor-pointer"
+  >
+    <div className="relative">
+      <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-emerald-500">
+        {/* Placeholder for your profile pic - standard generic business avatar if none provided */}
+        <img src="https://ui-avatars.com/api/?name=Shibu+Thomas&background=10b981&color=fff" alt="Shibu" className="w-full h-full object-cover" />
+      </div>
+      <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full animate-pulse"></div>
+    </div>
+    <div className="text-left">
+      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Incoming Signal</p>
+      <p className="text-sm font-bold text-gray-900 group-hover:text-emerald-600 transition-colors">Read Latest Insight</p>
+    </div>
+  </motion.a>
+);
+
 // --- VISUAL ASSET: THE SHIBU LOOP ---
 const ShibuLoopVisual = () => (
   <svg viewBox="0 0 500 500" className="w-full max-w-lg mx-auto drop-shadow-2xl">
@@ -90,10 +119,6 @@ const ShadowAuditorModal = ({ isOpen, onClose }) => {
         exit={{ opacity: 0 }} 
         className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md"
       >
-        {/* UX OPTIMIZATION: 
-          Mobile: Full screen (h-[100dvh]) to handle mobile keyboards better.
-          Desktop: Fixed size, centered card.
-        */}
         <motion.div 
           initial={{ scale: 0.95, opacity: 0, y: 20 }} 
           animate={{ scale: 1, opacity: 1, y: 0 }} 
@@ -114,7 +139,7 @@ const ShadowAuditorModal = ({ isOpen, onClose }) => {
             </button>
           </div>
 
-          {/* Chat Stream (Scrollable Area) */}
+          {/* Chat Stream */}
           <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 bg-[#0f172a] scrollbar-thin scrollbar-thumb-gray-700">
             {messages.map((msg, idx) => (
               <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -140,7 +165,7 @@ const ShadowAuditorModal = ({ isOpen, onClose }) => {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input Console (Fixed at bottom) */}
+          {/* Input Console */}
           <div className="bg-[#1e293b] border-t border-gray-700 p-4 shrink-0">
             <form onSubmit={handleSend} className="flex gap-2 md:gap-4 max-w-full">
               <input 
@@ -177,6 +202,10 @@ const App = () => {
   return (
     <div className="font-sans leading-relaxed bg-white text-gray-800 antialiased selection:bg-emerald-100 selection:text-emerald-900">
       
+      {/* 1. THE FLOATING LINKEDIN SIGNAL */}
+      <LinkedInFloater />
+
+      {/* 2. THE SHADOW MODAL */}
       <ShadowAuditorModal isOpen={isAuditorOpen} onClose={() => setIsAuditorOpen(false)} />
 
       {/* Navigation */}
@@ -229,7 +258,7 @@ const App = () => {
           </p>
           
           {/* THE GATES */}
-          <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto px-4">
             
             {/* GATE 1: SME */}
             <motion.div 
