@@ -11,6 +11,7 @@ app.use(express.json());
 
 // --- CONFIGURATION ---
 const PORT = process.env.PORT || 8080;
+// We hardcode the model to ensure stability
 const MODEL_NAME = "gemini-pro"; 
 const apiKey = process.env.GEMINI_API_KEY;
 
@@ -18,9 +19,10 @@ const apiKey = process.env.GEMINI_API_KEY;
 console.log("--- SYSTEM BOOT SEQUENCE ---");
 console.log(`Target Port: ${PORT}`);
 console.log(`AI Model: ${MODEL_NAME}`);
-if (!apiKey) console.error("CRITICAL WARNING: GEMINI_API_KEY is missing!");
 
 // --- AI INIT ---
+// If key is missing, we don't crash yet, we just warn.
+if (!apiKey) console.error("CRITICAL WARNING: GEMINI_API_KEY is missing!");
 const genAI = new GoogleGenerativeAI(apiKey || "MISSING_KEY");
 const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 
@@ -28,8 +30,13 @@ const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 app.post('/api/chat', async (req, res) => {
   try {
     const { message } = req.body;
-    console.log(`[INCOMING] ${message.substring(0, 50)}...`);
+    // Log the input to confirm the brain is receiving signals
+    console.log(`[INCOMING] ${message ? message.substring(0, 50) : 'Empty Message'}...`);
     
+    if (!apiKey) {
+        throw new Error("Server configuration error: GEMINI_API_KEY is missing.");
+    }
+
     const result = await model.generateContent(message);
     const response = await result.response;
     const text = response.text();
@@ -48,6 +55,7 @@ app.use(express.static(join(__dirname, 'dist')));
 app.get('*', (req, res) => res.sendFile(join(__dirname, 'dist', 'index.html')));
 
 // --- START SERVER (BIND TO 0.0.0.0) ---
+// This explicit binding is required for Cloud Run to "see" the app.
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server V2 LIVE on port ${PORT}`);
 });
