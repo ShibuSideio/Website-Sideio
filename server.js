@@ -26,7 +26,7 @@ const genAI = new GoogleGenerativeAI(apiKey || "MISSING_KEY");
 // STRATEGY: DYNAMIC MODEL SELECTION
 // We check the Cloud Environment first. If empty, we default to the current stable standard.
 // This allows you to upgrade to 'gemini-2.0' via Cloud Run settings later.
-const CURRENT_MODEL_NAME = process.env.GEMINI_MODEL_NAME || "gemini-1.5-flash";
+const CURRENT_MODEL_NAME = process.env.GEMINI_MODEL_NAME || "gemini-pro";
 
 console.log(`[SYSTEM STARTUP]: Logic Core Initialized.`);
 console.log(`[AI BRAIN]: Running on architecture '${CURRENT_MODEL_NAME}'`);
