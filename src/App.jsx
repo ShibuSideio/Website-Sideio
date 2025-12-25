@@ -64,11 +64,11 @@ const ShibuLoopVisual = () => (
 // --- COMPONENT: THE SHADOW AUDITOR BOARDROOM (AI Chat) ---
 const ShadowAuditorModal = ({ isOpen, onClose }) => {
   const [messages, setMessages] = useState([
-    { role: 'ai', text: 'Most CEOs are currently paying a 15% 'Commodity Tax' simply because their market signal is diffused. I am the Strategy Logic Auditor.
+    { role: 'ai', text: `Most CEOs are currently paying a 15% 'Commodity Tax' simply because their market signal is diffused. I am the Strategy Logic Auditor.
 
 To begin: Provide the singular strategic priority you believe is currently anchoring your firm’s valuation.
 
-(Examples: 'Transitioning from Service to SaaS Platform', 'Vertical integration of the supply chain', or 'Aggressive mid-market consolidation').' }
+(Examples: 'Transitioning from Service to SaaS Platform', 'Vertical integration of the supply chain', or 'Aggressive mid-market consolidation').` }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
