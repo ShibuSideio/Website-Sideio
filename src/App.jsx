@@ -3,7 +3,6 @@ import { HashLink as Link } from 'react-router-hash-link';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // --- CONFIGURATION ---
-// UPDATED: Points directly to your content stream
 const LINKEDIN_PROFILE_URL = "https://www.linkedin.com/in/narrative-architect/recent-activity/all/"; 
 
 // --- COMPONENT: LINKEDIN FLOATING INTELLIGENCE UNIT ---
@@ -19,7 +18,6 @@ const LinkedInFloater = () => (
   >
     <div className="relative">
       <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-emerald-500">
-        {/* You can replace this src with your actual LinkedIn profile picture URL later */}
         <img src="https://ui-avatars.com/api/?name=Narrative+Architect&background=10b981&color=fff" alt="Shibu" className="w-full h-full object-cover" />
       </div>
       <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full animate-pulse"></div>
@@ -49,7 +47,6 @@ const ShibuLoopVisual = () => (
     </circle>
     <line x1="160" y1="280" x2="210" y2="280" stroke="#ef4444" strokeWidth="2" strokeDasharray="4"/>
     <text x="220" y="285" fill="#ef4444" fontSize="14" fontWeight="bold" fontFamily="monospace">INVISIBLE KPI</text>
-    {/* Axis Labels */}
     <text x="62.5" y="480" fill="#6b7280" fontSize="12" fontWeight="bold" textAnchor="middle">PASSIVE</text>
     <text x="187.5" y="480" fill="#6b7280" fontSize="12" fontWeight="bold" textAnchor="middle">REACTIVE</text>
     <text x="312.5" y="480" fill="#6b7280" fontSize="12" fontWeight="bold" textAnchor="middle">ACTIVE</text>
@@ -61,24 +58,31 @@ const ShibuLoopVisual = () => (
   </svg>
 )
 
-// --- COMPONENT: THE SHADOW AUDITOR BOARDROOM (AI Chat) ---
+// --- COMPONENT: THE STRATEGY LOGIC AUDITOR (High-Status Interface) ---
 const ShadowAuditorModal = ({ isOpen, onClose }) => {
+  // 1. STATE MANAGEMENT
   const [messages, setMessages] = useState([
-    { role: 'ai', text: `Most CEOs are currently paying a 15% 'Commodity Tax' simply because their market signal is diffused. I am the Strategy Logic Auditor.
-
-To begin: Provide the singular strategic priority you believe is currently anchoring your firm’s valuation.
-
-(Examples: 'Transitioning from Service to SaaS Platform', 'Vertical integration of the supply chain', or 'Aggressive mid-market consolidation').` }
+    { 
+      role: 'ai', 
+      text: "Most CEOs are currently paying a 15% 'Commodity Tax' simply because their market signal is diffused. I am the Strategy Logic Auditor.\n\n" +
+            "To begin: Provide the singular strategic priority you believe is currently anchoring your firm’s valuation.\n\n" +
+            "(Examples: 'Transitioning from Service to SaaS Platform', 'Vertical integration of the supply chain', or 'Aggressive mid-market consolidation')."
+    }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSessionExpired, setIsSessionExpired] = useState(false); // <--- THE SCARCITY LOCK
+  const [timeLeft, setTimeLeft] = useState(90); // 90 Seconds allowed per turn
   const messagesEndRef = useRef(null);
+  const timerRef = useRef(null);
 
+  // 2. SCROLL LOGIC
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
   useEffect(scrollToBottom, [messages]);
 
+  // 3. BODY SCROLL LOCK
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -88,11 +92,43 @@ To begin: Provide the singular strategic priority you believe is currently ancho
     return () => { document.body.style.overflow = 'unset'; };
   }, [isOpen]);
 
+  // 4. THE "SCARCITY PROTOCOL" (Inactivity Timer)
+  useEffect(() => {
+    if (!isOpen || isSessionExpired) return;
+
+    // Reset timer on every interaction
+    const resetTimer = () => setTimeLeft(90);
+    
+    // Countdown Logic
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timerRef.current);
+          setIsSessionExpired(true); // LOCK THE CHAT
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    // Listen for activity to reset timer
+    window.addEventListener('mousemove', resetTimer);
+    window.addEventListener('keydown', resetTimer);
+
+    return () => {
+      clearInterval(timerRef.current);
+      window.removeEventListener('mousemove', resetTimer);
+      window.removeEventListener('keydown', resetTimer);
+    };
+  }, [isOpen, isSessionExpired]);
+
+  // 5. SEND MESSAGE LOGIC
   const handleSend = async (e) => {
-    e.preventDefault();
-    if (!input.trim()) return;
+    if (e) e.preventDefault();
+    if (!input.trim() || isLoading || isSessionExpired) return;
 
     const userMsg = input;
+    // Add user message to UI
     setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
     setInput('');
     setIsLoading(true);
@@ -101,12 +137,16 @@ To begin: Provide the singular strategic priority you believe is currently ancho
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMsg, history: messages })
+        body: JSON.stringify({ 
+            message: userMsg, 
+            history: messages // Pass history for context
+        }),
       });
+
       const data = await response.json();
       setMessages(prev => [...prev, { role: 'ai', text: data.reply }]);
     } catch (error) {
-      setMessages(prev => [...prev, { role: 'ai', text: "Logic Core unstable. Please check connection." }]);
+      setMessages(prev => [...prev, { role: 'ai', text: "[SYSTEM NOTICE]: Connection disrupted due to high latency." }]);
     } finally {
       setIsLoading(false);
     }
@@ -120,7 +160,7 @@ To begin: Provide the singular strategic priority you believe is currently ancho
         initial={{ opacity: 0 }} 
         animate={{ opacity: 1 }} 
         exit={{ opacity: 0 }} 
-        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md"
+        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md font-mono"
       >
         <motion.div 
           initial={{ scale: 0.95, opacity: 0, y: 20 }} 
@@ -133,13 +173,21 @@ To begin: Provide the singular strategic priority you believe is currently ancho
             <div className="flex items-center gap-3">
               <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_#10b981]"></div>
               <div>
-                <h3 className="text-white font-bold tracking-widest text-xs md:text-sm uppercase">STRATEGY LOGIC AUDITOR</h3>
+                <h3 className="text-white font-bold tracking-widest text-xs md:text-sm uppercase text-emerald-400">STRATEGY LOGIC AUDITOR</h3>
               </div>
             </div>
-            <button onClick={onClose} className="text-gray-400 hover:text-white transition p-2 hover:bg-white/10 rounded-full">
-              <span className="sr-only">Close</span>
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
+            
+            <div className="flex items-center gap-4">
+                {/* TIMER DISPLAY */}
+                <div className={`hidden md:block text-xs font-bold px-2 py-1 rounded ${timeLeft < 20 ? 'text-red-500 animate-pulse' : 'text-gray-500'}`}>
+                    SESSION CLOSES IN: {timeLeft}s
+                </div>
+
+                <button onClick={onClose} className="text-gray-400 hover:text-white transition p-2 hover:bg-white/10 rounded-full">
+                <span className="sr-only">Close</span>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
           </div>
 
           {/* Chat Stream */}
@@ -148,20 +196,17 @@ To begin: Provide the singular strategic priority you believe is currently ancho
               <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[90%] md:max-w-[80%] p-4 md:p-5 rounded-2xl text-sm md:text-base leading-relaxed shadow-lg ${
                   msg.role === 'user' 
-                    ? 'bg-emerald-600 text-white rounded-br-none border border-emerald-500' 
-                    : 'bg-[#1e293b] text-gray-200 border border-gray-700 rounded-bl-none'
+                    ? 'bg-emerald-900/40 text-white rounded-br-none border border-emerald-800' 
+                    : 'bg-[#1e293b] text-cyan-50 border border-gray-700 rounded-bl-none shadow-[0_0_15px_rgba(16,185,129,0.05)]'
                 }`}>
                   <div className="whitespace-pre-wrap">{msg.text}</div>
                 </div>
               </div>
             ))}
             {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-[#1e293b] px-5 py-3 rounded-2xl rounded-bl-none border border-gray-700 flex items-center gap-1">
-                  <span className="text-[10px] text-emerald-500 font-mono mr-2 uppercase">Synthesizing</span>
-                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce"></span>
-                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce delay-75"></span>
-                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce delay-150"></span>
+              <div className="flex justify-start animate-pulse">
+                <div className="bg-[#1e293b] px-5 py-3 rounded-2xl rounded-bl-none border border-gray-700 flex items-center gap-2">
+                  <span className="text-[10px] text-emerald-500 font-mono uppercase tracking-widest">[ANALYZING LOGIC PATTERNS]</span>
                 </div>
               </div>
             )}
@@ -170,23 +215,38 @@ To begin: Provide the singular strategic priority you believe is currently ancho
 
           {/* Input Console */}
           <div className="bg-[#1e293b] border-t border-gray-700 p-4 shrink-0">
-            <form onSubmit={handleSend} className="flex gap-2 md:gap-4 max-w-full">
-              <input 
-                type="text" 
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Type your strategic priority..." 
-                className="flex-1 bg-slate-900 text-white px-4 py-3 md:px-6 md:py-4 rounded-xl border border-gray-700 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition font-medium placeholder-gray-500 text-sm md:text-base"
-                autoFocus
-              />
-              <button 
-                type="submit" 
-                disabled={isLoading}
-                className="bg-emerald-600 text-white px-4 md:px-8 py-3 md:py-4 rounded-xl font-bold hover:bg-emerald-500 transition disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wide text-xs md:text-sm"
-              >
-                Send
-              </button>
-            </form>
+            {isSessionExpired ? (
+                // SESSION EXPIRED STATE
+                <div className="text-center py-4 text-red-400 border border-red-900/30 bg-red-950/10 rounded-xl">
+                    <p className="font-bold tracking-widest text-sm uppercase">SESSION TERMINATED DUE TO INACTIVITY.</p>
+                    <p className="text-xs mt-2 text-red-500 opacity-70">High-value strategy requires decisiveness.</p>
+                    <button 
+                        onClick={() => { setIsSessionExpired(false); setTimeLeft(90); setMessages([{role: 'ai', text: "Session Restored. State your priority."}]); }}
+                        className="mt-4 px-6 py-2 text-xs font-bold uppercase tracking-wider bg-red-900/20 hover:bg-red-900/40 text-red-200 border border-red-800 rounded transition-all"
+                    >
+                        REQUEST RE-CONNECTION
+                    </button>
+                </div>
+            ) : (
+                // NORMAL INPUT STATE
+                <form onSubmit={handleSend} className="flex gap-2 md:gap-4 max-w-full">
+                <input 
+                    type="text" 
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="Input strategic priority..." 
+                    className="flex-1 bg-slate-900 text-white px-4 py-3 md:px-6 md:py-4 rounded-xl border border-gray-700 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition font-mono placeholder-gray-600 text-sm md:text-base"
+                    autoFocus
+                />
+                <button 
+                    type="submit" 
+                    disabled={isLoading}
+                    className="bg-emerald-900/50 text-emerald-400 border border-emerald-800 px-4 md:px-8 py-3 md:py-4 rounded-xl font-bold hover:bg-emerald-900 transition disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wide text-xs md:text-sm"
+                >
+                    ➔
+                </button>
+                </form>
+            )}
           </div>
         </motion.div>
       </motion.div>
@@ -207,7 +267,7 @@ const App = () => {
       {/* 1. THE FLOATING LINKEDIN SIGNAL */}
       <LinkedInFloater />
 
-      {/* 2. THE SHADOW MODAL */}
+      {/* 2. THE STRATEGY AUDITOR MODAL */}
       <ShadowAuditorModal isOpen={isAuditorOpen} onClose={() => setIsAuditorOpen(false)} />
 
       {/* Navigation */}
@@ -291,7 +351,7 @@ const App = () => {
                 <div className="mb-6 inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-slate-700 text-white border border-gray-600">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
                 </div>
-                <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">Strategy Logic Auditorr</h3>
+                <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">Strategy Logic Auditor</h3>
                 <p className="text-xs text-gray-400 mb-6 font-bold uppercase tracking-widest">For Corporate / Enterprise</p>
                 <p className="text-slate-300 mb-8 leading-relaxed text-sm md:text-base">
                   AI-driven interrogation to expose <strong className="text-white">Narrative Debt</strong> and Strategic Drift. Ruthless logic.
