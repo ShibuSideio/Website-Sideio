@@ -1,7 +1,6 @@
 {
   "name": "website-sideio",
-  "private": true,
-  "version": "2.0.0",
+  "version": "2.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,8 +10,6 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.12.0",
-    "aos": "^2.3.4",
-    "clsx": "^2.1.1",
     "express": "^4.19.2",
     "firebase-admin": "^12.1.0",
     "framer-motion": "^11.2.10",
