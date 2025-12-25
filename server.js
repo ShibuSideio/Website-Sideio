@@ -4,62 +4,56 @@ import admin from 'firebase-admin';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
-// --- CONFIGURATION ---
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
-app.use(express.json()); // Replacement for body-parser in modern Express
+app.use(express.json()); 
 
-// 1. INITIALIZE DATABASE (FIREBASE)
-// Cloud Run automatically handles credentials if the service account has permissions.
-// If running locally, you might need a service-account key, but for Cloud Run this is fine.
+// --- DATABASE INIT ---
 try {
   if (!admin.apps.length) {
     admin.initializeApp();
   }
-  console.log("Database Connection: Active");
 } catch (e) {
   console.log("Database Warning:", e.message);
 }
-// We wrap db access in try/catch in case firebase isn't configured yet
-const getDb = () => {
-    try { return admin.firestore(); } catch(e) { return null; }
-};
 
-// 2. INITIALIZE AI (THE SHADOW AUDITOR)
-// The API Key comes from Cloud Run Environment Variables
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "API_KEY_MISSING");
+// --- AI CONFIGURATION ---
+const apiKey = process.env.GEMINI_API_KEY;
+const genAI = new GoogleGenerativeAI(apiKey || "MISSING_KEY");
 
-// --- LOGIC: THE STRATEGY AUDITOR PROMPT ---
+// STRATEGY: DYNAMIC MODEL SELECTION
+// We check the Cloud Environment first. If empty, we default to the current stable standard.
+// This allows you to upgrade to 'gemini-2.0' via Cloud Run settings later.
+const CURRENT_MODEL_NAME = process.env.GEMINI_MODEL_NAME || "gemini-1.5-flash";
+
+console.log(`[SYSTEM STARTUP]: Logic Core Initialized.`);
+console.log(`[AI BRAIN]: Running on architecture '${CURRENT_MODEL_NAME}'`);
+
 const SYSTEM_INSTRUCTION = `
 ROLE: You are the "StrategyAuditor," an elite logic engine designed to stress-test corporate strategy.
-TONE: Clinical, minimalist, sophisticated, intellectually skeptical.
+TONE: Clinical, minimalist, sophisticated.
 DIRECTIVES:
-- Use high-status vocabulary.
-- Avoid "AI" cliches.
+- Find logical flaws.
 - Label buzzwords as "Strategic Fog".
-- Find logical flaws in every response.
-- KEY TERMS: Institutional Clarity, Narrative Friction, Commodity Tax, Decoupled Valuation.
-
-THE TRAP: If they show "Diffusion Risk," ask: "If you had to sacrifice every service, product, and vertical but one to save the institution, which stays?"
-
-FINAL REPORT: If they answer the sacrifice question, generate a "CONFIDENTIAL LOGIC AUDIT" summarizing the Commodity Tax and Structural Gaps. End with: "The Principal has authorized a 15-minute diagnostic slot: https://calendar.app.google/73BXSrDCkXv7vZ2p9"
+- If they answer the sacrifice question, generate a "CONFIDENTIAL LOGIC AUDIT".
+- Link: https://calendar.app.google/73BXSrDCkXv7vZ2p9
 `;
 
-// --- API ENDPOINTS ---
-
-// API: Chat Interface
+// --- API: CHAT ---
 app.post('/api/chat', async (req, res) => {
   const { message, history } = req.body;
 
   try {
+    if (!apiKey) throw new Error("API Key Missing");
+
+    // Initialize the specific model defined in configuration
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
+      model: CURRENT_MODEL_NAME, 
       systemInstruction: SYSTEM_INSTRUCTION 
     });
 
-    // Format history for Gemini
     const chatHistory = (history || []).map(msg => ({
       role: msg.role === 'ai' ? 'model' : 'user',
       parts: [{ text: msg.text }]
@@ -70,57 +64,37 @@ app.post('/api/chat', async (req, res) => {
     const response = await result.response;
     const text = response.text();
 
-    // Log to DB (Fire & Forget)
-    const db = getDb();
-    if (db) {
-        db.collection('audit_logs').add({
-            user_input: message,
-            ai_response: text,
-            timestamp: admin.firestore.FieldValue.serverTimestamp()
-        }).catch(err => console.error("Log Error:", err));
-    }
+    // Log success
+    console.log(`[AUDIT]: Successfully ran inference on ${CURRENT_MODEL_NAME}`);
 
     res.json({ reply: text });
 
   } catch (error) {
-    console.error("Logic Core Error:", error);
-    res.status(500).json({ reply: "Logic Core disrupted. Signal interference detected. Please retry." });
-  }
-});
-
-// API: Visitor Tracking
-app.post('/api/visit', async (req, res) => {
-  try {
-    const db = getDb();
-    if (db) {
-        // Get IP from Cloud Run header or socket
-        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-        await db.collection('visitors').add({
-            ip: ip,
-            timestamp: admin.firestore.FieldValue.serverTimestamp(),
-            type: 'site_entry'
-        });
-        res.status(200).send({ status: 'logged' });
-    } else {
-        res.status(200).send({ status: 'db_offline' });
+    console.error("LOGIC CORE ERROR:", error);
+    
+    let userMessage = "Logic Core disrupted. Signal interference detected.";
+    
+    // Smart Error Handling for Model Versioning
+    if (error.message.includes("404") || error.message.includes("not found")) {
+        userMessage = `Error: The model '${CURRENT_MODEL_NAME}' was not found. Please check Cloud Run variables.`;
+    } else if (error.message.includes("API key")) {
+        userMessage = "Error: Security Clearance Failed (Invalid API Key).";
     }
-  } catch (e) {
-    console.error(e);
-    res.status(200).send({ status: 'silent_fail' });
+
+    res.status(500).json({ reply: userMessage });
   }
 });
 
-// --- SERVE THE FRONTEND ---
-// Vite builds to the 'dist' folder (not 'build')
-app.use(express.static(join(__dirname, 'dist')));
+// --- VISITOR TRACKING ---
+app.post('/api/visit', (req, res) => res.status(200).send({ status: 'ok' }));
 
-// Handle React Routing (return index.html for all non-API routes)
+// --- SERVE FRONTEND ---
+app.use(express.static(join(__dirname, 'dist')));
 app.get('*', (req, res) => {
   res.sendFile(join(__dirname, 'dist', 'index.html'));
 });
 
-// --- START SERVER ---
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
-  console.log(`SideIO Logic Core Online: Port ${PORT}`);
+  console.log(`SideIO Server Online: Port ${PORT}`);
 });
