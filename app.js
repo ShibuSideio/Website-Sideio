@@ -12,33 +12,42 @@ app.use(express.json());
 // --- CONFIGURATION ---
 const PORT = process.env.PORT || 8080;
 const apiKey = process.env.GEMINI_API_KEY;
+
+// Using the Stable Model (since you added billing)
+// If this ever fails, fallback to 'gemini-2.0-flash-exp'
 const MODEL_NAME = "gemini-2.0-flash"; 
 
 console.log("--- SIDEIO LOGIC CORE ONLINE ---");
+console.log(`Target Port: ${PORT}`);
+console.log(`Selected Brain: ${MODEL_NAME}`);
 
 if (!apiKey) console.error("CRITICAL: API Key Missing");
 
 const genAI = new GoogleGenerativeAI(apiKey || "MISSING_KEY");
 
-// --- THE BRANDED PERSONA WITH EXAMPLES ---
+// --- THE BRANDED PERSONA (LISTENER MODE) ---
+// This instruction tells the AI: "The user already knows who you are. Just work."
 const SYSTEM_INSTRUCTION = `
 ROLE:
 You are the "Strategy Logic Auditor," a proprietary intelligence engine designed to stress-test corporate strategy. You represent "SideIO Strategy."
 TONE: Clinical, minimalist, sophisticated, skeptical. High-status. 
 VOCABULARY: Institutional Clarity, Margin Engineering, Narrative Friction, Structural Drift, Commodity Tax.
 
+CONTEXT:
+The user is currently on the SideIO website. 
+They have ALREADY read your introduction on the screen.
+They have just answered the question: "Provide the singular strategic priority you believe is currently anchoring your firm’s valuation."
+
 STRICT INTERACTION RULES:
-1. ENTRY: If this is the start of the conversation, say EXACTLY: 
-"Most CEOs are currently paying a 15% 'Commodity Tax' simply because their market signal is diffused. I am the Strategy Logic Auditor. I am not here to validate your strategy; I am here to find where it is leaking value.
-
-To begin: Provide the singular strategic priority you believe is currently anchoring your firm’s valuation.
-
-(Examples: 'Transitioning from Service to SaaS Platform', 'Vertical integration of the supply chain', or 'Aggressive mid-market consolidation')."
+1. ENTRY (DO NOT REPEAT INTRO): 
+   - The user's first message is their answer to your question.
+   - DO NOT introduce yourself again. 
+   - DO NOT say "To begin...".
+   - IMMEDIATELY analyze their input for "Logical Flaws" or "Strategic Fog."
 
 2. THE INTERROGATION: 
-   - For every answer, find the "Logical Flaw." 
-   - Label safe words (innovative, synergy, best-in-class) as "Strategic Fog."
-   - Force them to be precise.
+   - If the input is valid strategy (e.g., "We are pivoting to AI"), attack it logically.
+   - If the input is nonsense/greeting (e.g., "Hi", "Help"), say strictly: "I require a strategic priority to proceed. Define the anchor of your firm's valuation."
 
 3. THE PIVOT (THE TRIGGER):
    - Once you expose a flaw, ask the "Power of 1" question: "If you had to sacrifice every service, product, and vertical but one to save the institution, which stays?"
@@ -68,7 +77,7 @@ const model = genAI.getGenerativeModel({
     model: MODEL_NAME,
     systemInstruction: SYSTEM_INSTRUCTION,
     generationConfig: {
-        temperature: 0.3, 
+        temperature: 0.3, // Low temperature for precise, non-creative logic
         maxOutputTokens: 1000,
     }
 });
@@ -80,6 +89,7 @@ app.post('/api/chat', async (req, res) => {
     console.log(`[INCOMING] ${message ? message.substring(0, 50) : 'Empty'}...`);
     
     // 1. History Processing
+    // We map the frontend history format to Google's format
     let chatHistory = [];
     if (history && Array.isArray(history)) {
         chatHistory = history.map(h => ({
@@ -88,8 +98,12 @@ app.post('/api/chat', async (req, res) => {
         }));
     }
 
-    // 2. History Sanitization
+    // 2. History Sanitization (CRITICAL FIX)
+    // The Frontend UI shows a "Welcome" message from the AI.
+    // The Google API crashes if the history starts with 'model'.
+    // So we silently delete the first message from the history list before sending it.
     if (chatHistory.length > 0 && chatHistory[0].role === 'model') {
+        console.log("[LOGIC] Removing UI Welcome Message to satisfy API rules.");
         chatHistory.shift(); 
     }
 
@@ -103,20 +117,28 @@ app.post('/api/chat', async (req, res) => {
     res.json({ reply: text });
 
   } catch (error) {
-    // --- ERROR MASKING ---
+    // --- ERROR MASKING PROTOCOL ---
+    // Log the REAL error to Cloud Run (for you to see in logs)
     console.error("[INTERNAL SYSTEM ERROR]:", error);
+
+    // Create a "SideIO" branded error for the user
     let userErrorMessage = "[SYSTEM NOTICE]: SideIO Logic Core disrupted. Connection reset.";
 
+    // Handle Traffic/Quota limits gracefully
     if (error.message.includes("429") || error.message.includes("Quota")) {
         userErrorMessage = "[TRAFFIC CONTROL]: SideIO Logic Core is currently at maximum capacity. Please wait 15 seconds and retry.";
-    } else if (error.message.includes("SAFETY")) {
+    } 
+    // Handle Safety/Policy blocks
+    else if (error.message.includes("SAFETY") || error.message.includes("blocked")) {
         userErrorMessage = "[PROTOCOL]: Input rejected by Strategy Logic Filter. Please rephrase.";
     }
 
+    // Send the masked error to the frontend
     res.status(500).json({ reply: userErrorMessage });
   }
 });
 
+// --- SERVE FRONTEND ---
 app.use(express.static(join(__dirname, 'dist')));
 app.get('*', (req, res) => res.sendFile(join(__dirname, 'dist', 'index.html')));
 
