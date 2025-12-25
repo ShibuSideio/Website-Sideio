@@ -133,7 +133,7 @@ To begin: Provide the singular strategic priority you believe is currently ancho
             <div className="flex items-center gap-3">
               <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_#10b981]"></div>
               <div>
-                <h3 className="text-white font-bold tracking-widest text-xs md:text-sm uppercase">SHADOW_LOGIC_CORE</h3>
+                <h3 className="text-white font-bold tracking-widest text-xs md:text-sm uppercase">STRATEGY LOGIC AUDITOR</h3>
               </div>
             </div>
             <button onClick={onClose} className="text-gray-400 hover:text-white transition p-2 hover:bg-white/10 rounded-full">
