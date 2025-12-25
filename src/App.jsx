@@ -3,8 +3,7 @@ import { HashLink as Link } from 'react-router-hash-link';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // --- CONFIGURATION ---
-// REPLACE THIS WITH YOUR ACTUAL LINKEDIN USERNAME (e.g., shibu-thomas-123)
-const LINKEDIN_PROFILE_URL = "https://www.linkedin.com/in/narrative-architect/recent-activity/all/"; 
+const LINKEDIN_PROFILE_URL = "https://www.linkedin.com/in/shibuthomas/recent-activity/all/"; 
 
 // --- COMPONENT: LINKEDIN FLOATING INTELLIGENCE UNIT ---
 const LinkedInFloater = () => (
@@ -19,7 +18,6 @@ const LinkedInFloater = () => (
   >
     <div className="relative">
       <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-emerald-500">
-        {/* Placeholder for your profile pic - standard generic business avatar if none provided */}
         <img src="https://ui-avatars.com/api/?name=Shibu+Thomas&background=10b981&color=fff" alt="Shibu" className="w-full h-full object-cover" />
       </div>
       <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full animate-pulse"></div>
@@ -61,10 +59,10 @@ const ShibuLoopVisual = () => (
   </svg>
 )
 
-// --- COMPONENT: THE SHADOW AUDITOR BOARDROOM (UX Optimized) ---
+// --- COMPONENT: THE SHADOW AUDITOR BOARDROOM (AI Chat) ---
 const ShadowAuditorModal = ({ isOpen, onClose }) => {
   const [messages, setMessages] = useState([
-    { role: 'ai', text: "Most CEOs are currently paying a 15% 'Commodity Tax' simply because their market signal is diffused. I am the Shadow Auditor. \n\nTo begin: Provide the singular strategic priority you believe is currently anchoring your firm’s valuation." }
+    { role: 'ai', text: "Most CEOs are currently paying a 15% 'Commodity Tax' simply because their market signal is diffused. I am the Shadow Auditor.\n\nTo begin: Provide the singular strategic priority you believe is currently anchoring your firm’s valuation." }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -75,7 +73,6 @@ const ShadowAuditorModal = ({ isOpen, onClose }) => {
   };
   useEffect(scrollToBottom, [messages]);
 
-  // Prevent background scrolling when modal is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -194,7 +191,6 @@ const ShadowAuditorModal = ({ isOpen, onClose }) => {
 const App = () => {
   const [isAuditorOpen, setIsAuditorOpen] = useState(false);
 
-  // Database Tracking
   useEffect(() => {
     fetch('/api/visit', { method: 'POST' }).catch(() => {});
   }, []);
@@ -218,28 +214,28 @@ const App = () => {
             <li><Link smooth to="#shibu-loop" className="hover:text-emerald-600 transition-colors">The Loop</Link></li>
             <li><Link smooth to="#services" className="hover:text-emerald-600 transition-colors">Frameworks</Link></li>
             <li>
-              <button 
-                onClick={() => setIsAuditorOpen(true)}
-                className="bg-gray-900 text-white px-5 py-2.5 rounded-full hover:bg-gray-800 transition text-xs font-bold uppercase tracking-widest flex items-center gap-2 shadow-lg"
+              {/* THE PIVOT: BOOK BRIEFING BUTTON */}
+              <Link 
+                smooth to="#contact" 
+                className="bg-gray-900 text-white px-6 py-2.5 rounded-full hover:bg-emerald-600 transition text-xs font-bold uppercase tracking-widest flex items-center gap-2 shadow-lg hover:shadow-emerald-200"
               >
-                <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
-                Login
-              </button>
+                Book Briefing
+              </Link>
             </li>
           </ul>
-          {/* Mobile Menu Button - Simple AI Trigger for mobile */}
-          <button 
-            onClick={() => setIsAuditorOpen(true)}
-            className="md:hidden bg-gray-900 text-white px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-2"
+          
+          {/* Mobile Menu Button - Book Briefing for mobile */}
+          <Link 
+            smooth to="#contact"
+            className="md:hidden bg-gray-900 text-white px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-emerald-600 transition"
           >
-            <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
-            AI Login
-          </button>
+            Book Briefing
+          </Link>
         </nav>
       </header>
 
       {/* HERO SECTION */}
-      <section id="home" className="min-h-screen flex flex-col justify-center px-4 md:px-6 pt-24 pb-12 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-50 via-white to-white">
+      <section id="home" className="min-h-screen flex flex-col justify-center px-4 md:px-6 pt-28 pb-12 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-50 via-white to-white">
         <motion.div 
           initial={{ opacity: 0, y: 30 }} 
           animate={{ opacity: 1, y: 0 }} 
@@ -294,6 +290,7 @@ const App = () => {
                 <p className="text-slate-300 mb-8 leading-relaxed text-sm md:text-base">
                   AI-driven interrogation to expose <strong className="text-white">Narrative Debt</strong> and Strategic Drift. Ruthless logic.
                 </p>
+                {/* TRIGGER FOR SHADOW AUDITOR */}
                 <button onClick={() => setIsAuditorOpen(true)} className="w-full text-center bg-white text-gray-900 py-4 rounded-xl font-bold hover:bg-gray-100 transition shadow-inner">Enter Boardroom</button>
               </div>
             </motion.div>
@@ -394,7 +391,26 @@ const App = () => {
         </div>
       </section>
 
-      {/* FOOTER */}
+      {/* CONTACT */}
+      <section id="contact" className="py-20 md:py-32 px-4 md:px-6 bg-gray-50">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl md:text-5xl font-bold mb-12 text-gray-900">
+            Initiate Your <span className="text-emerald-500">Delta</span>
+          </h2>
+          <form className="bg-white p-8 md:p-14 rounded-[2.5rem] shadow-xl space-y-6 max-w-2xl mx-auto border border-gray-100">
+            <div className="grid md:grid-cols-2 gap-6">
+              <input type="text" placeholder="Name" className="w-full px-6 py-4 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all" required/>
+              <input type="email" placeholder="Email" className="w-full px-6 py-4 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all" required/>
+            </div>
+            <textarea placeholder="Where is your current friction point?" rows="4" className="w-full px-6 py-4 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"></textarea>
+            <button type="submit" className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white py-4 md:py-5 rounded-xl text-lg md:text-xl font-bold hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
+              Request Confidential Consultation
+            </button>
+          </form>
+          <p className="mt-12 text-gray-400 font-medium">Cochin • Trivandrum • contact@sideio.com</p>
+        </div>
+      </section>
+
       <footer className="py-12 text-center text-gray-400 border-t border-gray-100 text-sm bg-white">
         © 2025 Sideio Impetus Pvt. Ltd. • Architected by Shibu Thomas
       </footer>
