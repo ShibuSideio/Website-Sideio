@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://sideio.com/sitemap.xml
